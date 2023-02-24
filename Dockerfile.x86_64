@@ -1,0 +1,20 @@
+FROM --platform=linux/ppc64le localhost/cross-toolchain-ppc64le-builder:f37 as ppc64le
+
+FROM --platform=linux/s390x localhost/cross-toolchain-s390x-builder:f37 as s390x
+
+FROM --platform=linux/amd64 registry.fedoraproject.org/fedora:37 as host
+
+COPY --from=ppc64le /opt/toolchain/usr /usr
+COPY --from=s390x /opt/toolchain/usr /usr
+
+RUN dnf install -y clang lld
+
+ADD hello.c .
+
+RUN clang -fuse-ld=lld -target ppc64le-redhat-linux --sysroot=/usr/ppc64le-redhat-linux/ hello.c
+
+FROM --platform=linux/ppc64le localhost/cross-toolchain-ppc64le-builder:f37
+
+COPY --from=host /a.out /
+
+RUN ./a.out
