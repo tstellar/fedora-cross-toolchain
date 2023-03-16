@@ -12,9 +12,3 @@ RUN dnf install -y clang lld
 ADD hello.c .
 
 RUN clang -fuse-ld=lld -target ppc64le-redhat-linux --sysroot=/usr/ppc64le-redhat-linux/ hello.c
-
-FROM --platform=linux/ppc64le localhost/cross-toolchain-ppc64le-builder:f37
-
-COPY --from=host /a.out /
-
-RUN ./a.out

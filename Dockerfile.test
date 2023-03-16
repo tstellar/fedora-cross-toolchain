@@ -1,0 +1,5 @@
+FROM --platform=linux/amd64 localhost/cross-toolchain:f37 as test
+
+FROM --platform=linux/ppc64le localhost/fedora:37
+COPY --from=test  /a.out /
+RUN ./a.out
