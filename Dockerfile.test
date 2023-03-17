@@ -1,13 +1,13 @@
-ARG TARGET_ARCH
-
-FROM localhost/${TARGET_ARCH}-redhat-linux-clang:37 as host
-
+ARG HOST_CONTAINER
+ARG TARGET_CONTAINER
+FROM ${HOST_CONTAINER} as host
 ARG TARGET_ARCH
 
 ADD hello.c .
 
 RUN clang -fuse-ld=lld -target ${TARGET_ARCH}-redhat-linux --sysroot=/usr/${TARGET_ARCH}-redhat-linux/ hello.c
 
-FROM quay.io/fedora/fedora:37-${TARGET_ARCH}
+ARG TARGET_CONTAINER
+FROM ${TARGET_CONTAINER}
 COPY --from=host  /a.out /
 RUN ./a.out
