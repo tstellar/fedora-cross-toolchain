@@ -1,0 +1,23 @@
+ARG HOST_ARCH
+ARG TARGET_ARCH
+FROM quay.io/fedora/fedora:37-${TARGET_ARCH} as target
+
+ARG TARGET_ARCH
+
+RUN dnf install -y  dnf-plugins-core gcc
+
+RUN dnf download glibc glibc-devel gcc gcc-c++ libgcc
+
+RUN if [ "${TARGET_ARCH}" = "s390x" ]; then \
+      dnf download glibc-headers-s390; \
+    fi
+
+RUN mkdir -p /opt/toolchain/usr/`gcc -dumpmachine`/usr/
+
+RUN rpm -i *.rpm --nodeps --root /opt/toolchain/usr/`gcc -dumpmachine`/
+
+FROM quay.io/fedora/fedora:37-${HOST_ARCH} as host
+
+COPY --from=target /opt/toolchain/usr /usr/
+
+RUN dnf install -y clang lld
