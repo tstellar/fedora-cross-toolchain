@@ -1,0 +1,45 @@
+name: Build Containers
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  push:
+    branches: main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - aarch64
+          - ppc64le
+    env:
+      BASE_CONTAINER: "quay.io/fedora/fedora:37"
+      CROSS_CONTAINER: "ghcr.io/tstellar/${{ matrix.arch }}-redhat-linux-clang:f37"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get install -y podman qemu-user-static
+
+    - name: Build
+      run: |
+        echo $CROSS_CONTAINER
+        bash build.sh ${{ matrix.arch }} $BASE_CONTAINER $CROSS_CONTAINER
+
+    - name: Test
+      run: |
+        bash test.sh ${{ matrix.arch }} $BASE_CONTAINER $CROSS_CONTAINER
+
+    - name: Deploy
+      if: github.ref_name == 'main'
+      run: |
+        podman images
+        echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+        podman push $CROSS_CONTAINER
