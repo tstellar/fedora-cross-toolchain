@@ -6,7 +6,7 @@ LABEL org.opencontainers.image.source=https://github.com/tstellar/fedora-cross-t
 
 RUN dnf install -y  dnf-plugins-core gcc
 
-RUN dnf download glibc glibc-devel gcc gcc-c++ libgcc libstdc++ libstdc++-devel
+RUN dnf download glibc glibc-devel gcc gcc-c++ libgcc libstdc++ libstdc++-devel kernel-headers
 
 RUN if [ "`arch`" = "s390x" ]; then \
       dnf download glibc-headers-s390; \
